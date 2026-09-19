@@ -17,13 +17,19 @@ import java.util.Properties;
  */
 public class BotApplication {
 
-    /** Имя файла с локальной конфигурацией (токен и имя бота). */
+    /**
+     * Имя файла с локальной конфигурацией (токен и имя бота).
+     */
     private static final String CONFIGURATION_FILE_NAME = "config.properties";
 
-    /** Ключ для получения токена авторизации из свойств конфигурации. */
+    /**
+     * Ключ для получения токена авторизации из свойств конфигурации.
+     */
     private static final String KEY_BOT_TOKEN = "bot.token";
 
-    /** Ключ для получения имени пользователя бота (username) из свойств конфигурации. */
+    /**
+     * Ключ для получения имени пользователя бота (username) из свойств конфигурации.
+     */
     private static final String KEY_BOT_USERNAME = "bot.username";
 
     /**

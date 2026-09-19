@@ -11,10 +11,14 @@ import org.telegram.telegrambots.meta.api.objects.Update;
  */
 public class EchoBot extends TelegramLongPollingBot {
 
-    /** Токен авторизации бота, полученный от BotFather. */
+    /**
+     * Токен авторизации бота, полученный от BotFather.
+     */
     private String botToken;
 
-    /** Имя пользователя (username) бота без символа @. */
+    /**
+     * Имя пользователя (username) бота без символа @.
+     */
     private String botUsername;
 
     /**
@@ -44,7 +48,7 @@ public class EchoBot extends TelegramLongPollingBot {
 
         var message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
-        message.setText(messageText);
+        message.setText(prepareBotResponse(messageText));
 
         try {
             execute(message);
@@ -73,5 +77,16 @@ public class EchoBot extends TelegramLongPollingBot {
     @Override
     public String getBotToken() {
         return botToken;
+    }
+
+    /**
+     * Возвращает исходный текст сообщения без изменений.
+     * Используется для реализации логики точного повторения сообщений.
+     *
+     * @param messageText исходный текст от пользователя
+     * @return тот же самый текст
+     */
+    public String prepareBotResponse(String messageText) {
+        return messageText;
     }
 }
