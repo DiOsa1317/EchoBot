@@ -1,5 +1,7 @@
 package com.example.echobot;
 
+import com.example.echobot.bots.TelegramBot;
+import com.example.echobot.service.EchoService;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
@@ -10,7 +12,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 /**
- * Точка входа в приложение EchoBot.
+ * Точка входа в приложение TelegramBot.
  * Отвечает за загрузку конфигурации из локального файла,
  * создание экземпляра бота и его регистрацию в Telegram API
  * через механизм Long Polling.
@@ -40,31 +42,35 @@ public class BotApplication {
     public static void main(String[] args) {
         try {
             var config = loadConfiguration();
-            var token = config.getProperty(KEY_BOT_TOKEN);
-            var username = config.getProperty(KEY_BOT_USERNAME);
+            validateConfig(config);
 
-            if (token == null || token.isBlank()
-                    || username == null || username.isBlank()) {
-                throw new IllegalStateException(
-                        "Ошибка конфигурации: токен или имя бота не найдены в файле " + CONFIGURATION_FILE_NAME
-                );
-            }
-
-            var botApi = new TelegramBotsApi(DefaultBotSession.class);
-            var echoBot = new EchoBot(token, username);
-            botApi.registerBot(echoBot);
-
-            System.out.println("Бот '" + username + "' успешно запущен.");
-
-        } catch (TelegramApiException e) {
-            System.err.println("Ошибка Telegram API: " + e.getMessage());
+            var echoService = new EchoService();
+            startTelegramBot(config, echoService);
+        } catch (Exception e) {
+            System.err.println("Ошибка при запуске: " + e.getMessage());
             e.printStackTrace();
-        } catch (IOException e) {
-            System.err.println("Ошибка чтения конфигурации: " + e.getMessage());
-            e.printStackTrace();
-        } catch (IllegalStateException e) {
-            System.err.println(e.getMessage());
+            System.exit(1);
         }
+    }
+
+    /**
+     * Инициализирует и регистрирует Telegram-бота в API.
+     *
+     * @param config      свойства конфигурации, содержащие токен и username
+     * @param echoService сервис для обработки текста сообщений
+     * @throws TelegramApiException если произошла ошибка при регистрации бота
+     */
+    private static void startTelegramBot(Properties config, EchoService echoService)
+            throws TelegramApiException {
+        var token = config.getProperty(KEY_BOT_TOKEN);
+        var username = config.getProperty(KEY_BOT_USERNAME);
+
+        var bot = new TelegramBot(token, username, echoService);
+
+        TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
+        botsApi.registerBot(bot);
+
+        System.out.println("Telegram-бот '" + username + "' успешно подключен.");
     }
 
     /**
@@ -76,11 +82,24 @@ public class BotApplication {
      */
     private static Properties loadConfiguration() throws IOException {
         var properties = new Properties();
-
         try (InputStream input = new FileInputStream(CONFIGURATION_FILE_NAME)) {
             properties.load(input);
         }
-
         return properties;
+    }
+
+    /**
+     * Проверяет наличие обязательных параметров в конфигурации.
+     *
+     * @param config загруженные свойства конфигурации
+     * @throws IllegalStateException если отсутствует токен или имя бота
+     */
+    private static void validateConfig(Properties config) {
+        if (config.getProperty(KEY_BOT_TOKEN) == null ||
+                config.getProperty(KEY_BOT_USERNAME) == null) {
+            throw new IllegalStateException(
+                    "В файле " + CONFIGURATION_FILE_NAME + " отсутствуют токен (bot.token) или имя бота (bot.username)"
+            );
+        }
     }
 }

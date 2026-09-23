@@ -1,5 +1,6 @@
-package com.example.echobot;
+package com.example.echobot.bots;
 
+import com.example.echobot.service.EchoService;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -9,27 +10,34 @@ import org.telegram.telegrambots.meta.api.objects.Update;
  * Наследует TelegramLongPollingBot и реализует логику повторения
  * текстовых сообщений пользователей в режиме Long Polling.
  */
-public class EchoBot extends TelegramLongPollingBot {
+public class TelegramBot extends TelegramLongPollingBot {
 
     /**
      * Токен авторизации бота, полученный от BotFather.
      */
-    private String botToken;
+    private final String botToken;
 
     /**
      * Имя пользователя (username) бота без символа @.
      */
-    private String botUsername;
+    private final String botUsername;
+
+    /**
+     * Сервис для бизнес-логики обработки сообщений.
+     */
+    private final EchoService echoService;
 
     /**
      * Создает новый экземпляр эхо-бота.
      *
-     * @param token токен авторизации бота
-     * @param name  имя пользователя бота (username)
+     * @param token       токен авторизации бота
+     * @param name        имя пользователя бота (username)
+     * @param echoService сервис для подготовки ответа
      */
-    public EchoBot(String token, String name) {
+    public TelegramBot(String token, String name, EchoService echoService) {
         this.botToken = token;
         this.botUsername = name;
+        this.echoService = echoService;
     }
 
     /**
@@ -40,19 +48,24 @@ public class EchoBot extends TelegramLongPollingBot {
      */
     @Override
     public void onUpdateReceived(Update update) {
+        // Игнорируем обновления, не содержащие текстовых сообщений
         if (!update.hasMessage() || !update.getMessage().hasText()) {
             return;
         }
+
         var messageText = update.getMessage().getText();
         long chatId = update.getMessage().getChatId();
 
+        String responseText = echoService.prepareBotResponse(messageText);
+
         var message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
-        message.setText(prepareBotResponse(messageText));
+        message.setText(responseText);
 
         try {
             execute(message);
         } catch (Exception e) {
+            System.err.println("Ошибка при отправке сообщения: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -77,16 +90,5 @@ public class EchoBot extends TelegramLongPollingBot {
     @Override
     public String getBotToken() {
         return botToken;
-    }
-
-    /**
-     * Возвращает исходный текст сообщения без изменений.
-     * Используется для реализации логики точного повторения сообщений.
-     *
-     * @param messageText исходный текст от пользователя
-     * @return тот же самый текст
-     */
-    public String prepareBotResponse(String messageText) {
-        return messageText;
     }
 }
