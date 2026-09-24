@@ -3,7 +3,7 @@ package com.example.echobot.service;
 /**
  * Сервис для обработки входящих сообщений.
  */
-public class EchoService {
+public class EchoService implements IService {
 
     /**
      * Возвращает исходный текст сообщения или уведомление, если текст пуст.
@@ -12,7 +12,7 @@ public class EchoService {
      * @return обработанный текст
      */
     public String prepareBotResponse(String messageText) {
-        if (messageText == null || messageText.isBlank()) {
+        if (messageText.isBlank()) {
             return "Сообщение не должно быть пустым";
         }
         return messageText;
