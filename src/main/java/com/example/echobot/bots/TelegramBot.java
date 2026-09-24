@@ -1,9 +1,16 @@
 package com.example.echobot.bots;
 
-import com.example.echobot.service.EchoService;
+import com.example.echobot.BotApplication;
+import com.example.echobot.service.IService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
+
 
 /**
  * Основной класс эхо-бота для Telegram.
@@ -25,19 +32,24 @@ public class TelegramBot extends TelegramLongPollingBot {
     /**
      * Сервис для бизнес-логики обработки сообщений.
      */
-    private final EchoService echoService;
+    private final IService iService;
+
+    /**
+     * Логгер для записи событий при работе бота
+     */
+    private static final Logger logger = LoggerFactory.getLogger(TelegramBot.class);
 
     /**
      * Создает новый экземпляр эхо-бота.
      *
      * @param token       токен авторизации бота
      * @param name        имя пользователя бота (username)
-     * @param echoService сервис для подготовки ответа
+     * @param iService сервис для подготовки ответа
      */
-    public TelegramBot(String token, String name, EchoService echoService) {
+    public TelegramBot(String token, String name, IService iService) {
         this.botToken = token;
         this.botUsername = name;
-        this.echoService = echoService;
+        this.iService = iService;
     }
 
     /**
@@ -48,7 +60,6 @@ public class TelegramBot extends TelegramLongPollingBot {
      */
     @Override
     public void onUpdateReceived(Update update) {
-        // Игнорируем обновления, не содержащие текстовых сообщений
         if (!update.hasMessage() || !update.getMessage().hasText()) {
             return;
         }
@@ -56,7 +67,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         var messageText = update.getMessage().getText();
         long chatId = update.getMessage().getChatId();
 
-        String responseText = echoService.prepareBotResponse(messageText);
+        String responseText = iService.prepareBotResponse(messageText);
 
         var message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
@@ -65,9 +76,19 @@ public class TelegramBot extends TelegramLongPollingBot {
         try {
             execute(message);
         } catch (Exception e) {
-            System.err.println("Ошибка при отправке сообщения: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Ошибка при отправке сообщения: ", e);
         }
+    }
+
+    /**
+     * Инициализирует и регистрирует Telegram-бота в API.
+     * @throws TelegramApiException если произошла ошибка при регистрации бота
+     */
+    public void start()
+            throws TelegramApiException {
+        TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
+        botsApi.registerBot(this);
+        System.out.println("Telegram-бот '" + botUsername + "' успешно подключен.");
     }
 
     /**
