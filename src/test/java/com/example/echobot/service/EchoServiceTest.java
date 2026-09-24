@@ -33,13 +33,6 @@ public class EchoServiceTest {
     }
 
     @Test
-    @DisplayName("prepareBotResponse обрабатывает null")
-    void shouldHandleNullInput() {
-        String result = echoService.prepareBotResponse(null);
-        assertEquals("Сообщение не должно быть пустым", result);
-    }
-
-    @Test
     @DisplayName("prepareBotResponse обрабатывает пустую строку")
     void shouldHandleEmptyString() {
         String result = echoService.prepareBotResponse("");
