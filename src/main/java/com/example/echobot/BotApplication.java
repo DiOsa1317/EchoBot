@@ -4,7 +4,6 @@ import com.example.echobot.bots.TelegramBot;
 import com.example.echobot.service.EchoService;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Точка входа в приложение TelegramBot.
@@ -29,12 +28,12 @@ public class BotApplication {
             var configuration = new Configuration("config.properties",
                     "bot.token", "bot.username");
             var config = configuration.loadConfiguration();
-            configuration.validateConfig(config);
             logger.info("Конфигурация успешно загружена");
 
             var echoService = new EchoService();
-            var telegramBot = new TelegramBot(config.getProperty(configuration.keyBotToken()),
-                    config.getProperty(configuration.keyBotUsername()), echoService);
+            var keyBotToken = config.getProperty(configuration.keyBotToken());
+            var keyBotUsername = config.getProperty(configuration.keyBotUsername());
+            var telegramBot = new TelegramBot(keyBotToken, keyBotUsername, echoService);
             telegramBot.start();
         } catch (Exception e) {
             logger.error("Ошибка при запуске", e);

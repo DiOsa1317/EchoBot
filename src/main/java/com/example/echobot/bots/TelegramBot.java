@@ -1,7 +1,6 @@
 package com.example.echobot.bots;
 
-import com.example.echobot.BotApplication;
-import com.example.echobot.service.IService;
+import com.example.echobot.service.BotResponseProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -32,24 +31,24 @@ public class TelegramBot extends TelegramLongPollingBot {
     /**
      * Сервис для бизнес-логики обработки сообщений.
      */
-    private final IService iService;
+    private final BotResponseProcessor botResponseProcessor;
 
     /**
      * Логгер для записи событий при работе бота
      */
-    private static final Logger logger = LoggerFactory.getLogger(TelegramBot.class);
+    private final Logger logger = LoggerFactory.getLogger(TelegramBot.class);
 
     /**
      * Создает новый экземпляр эхо-бота.
      *
      * @param token       токен авторизации бота
      * @param name        имя пользователя бота (username)
-     * @param iService сервис для подготовки ответа
+     * @param botResponseProcessor сервис для подготовки ответа
      */
-    public TelegramBot(String token, String name, IService iService) {
+    public TelegramBot(String token, String name, BotResponseProcessor botResponseProcessor) {
         this.botToken = token;
         this.botUsername = name;
-        this.iService = iService;
+        this.botResponseProcessor = botResponseProcessor;
     }
 
     /**
@@ -67,7 +66,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         var messageText = update.getMessage().getText();
         long chatId = update.getMessage().getChatId();
 
-        String responseText = iService.prepareBotResponse(messageText);
+        String responseText = botResponseProcessor.processBotResponse(messageText);
 
         var message = new SendMessage();
         message.setChatId(String.valueOf(chatId));

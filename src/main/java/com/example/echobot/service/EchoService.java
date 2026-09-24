@@ -1,17 +1,17 @@
 package com.example.echobot.service;
 
 /**
- * Сервис для обработки входящих сообщений.
+ * Сервис, обрабатывающий входящие сообщения путем отправления тех же самых сообщений.
  */
-public class EchoService implements IService {
+public class EchoService implements BotResponseProcessor {
 
     /**
      * Возвращает исходный текст сообщения или уведомление, если текст пуст.
-     *
+     *prepareBotResponse
      * @param messageText исходный текст от пользователя
      * @return обработанный текст
      */
-    public String prepareBotResponse(String messageText) {
+    public String processBotResponse(String messageText) {
         if (messageText.isBlank()) {
             return "Сообщение не должно быть пустым";
         }

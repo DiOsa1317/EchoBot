@@ -28,21 +28,21 @@ public class EchoServiceTest {
     })
     @DisplayName("prepareBotResponse возвращает идентичный входной текст")
     void shouldReturnExactSameText(String input) {
-        String result = echoService.prepareBotResponse(input);
+        String result = echoService.processBotResponse(input);
         assertEquals(input, result, "Метод должен вернуть ТОЧНО тот же текст");
     }
 
     @Test
     @DisplayName("prepareBotResponse обрабатывает пустую строку")
     void shouldHandleEmptyString() {
-        String result = echoService.prepareBotResponse("");
+        String result = echoService.processBotResponse("");
         assertEquals("Сообщение не должно быть пустым", result);
     }
 
     @Test
     @DisplayName("prepareBotResponse обрабатывает строку из пробелов")
     void shouldHandleBlankString() {
-        String result = echoService.prepareBotResponse("   \t\n  ");
+        String result = echoService.processBotResponse("   \t\n  ");
         assertEquals("Сообщение не должно быть пустым", result);
     }
 }

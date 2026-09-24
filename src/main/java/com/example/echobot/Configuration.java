@@ -19,10 +19,11 @@ public record Configuration(String configFileName, String keyBotToken, String ke
      * @return объект Properties с загруженными данными конфигурации
      * @throws IOException если файл не найден, недоступен для чтения или поврежден
      */
-    public Properties loadConfiguration() throws IOException {
+    public Properties loadConfiguration() throws IOException, IllegalStateException {
         var properties = new Properties();
         try (InputStream input = new FileInputStream(configFileName)) {
             properties.load(input);
+           validateConfig(properties);
         }
         return properties;
     }
@@ -33,7 +34,7 @@ public record Configuration(String configFileName, String keyBotToken, String ke
      * @param config загруженные свойства конфигурации
      * @throws IllegalStateException если отсутствует токен или имя бота
      */
-    public void validateConfig(Properties config) {
+    private void validateConfig(Properties config) {
         if (config.getProperty(keyBotToken) == null ||
                 config.getProperty(keyBotUsername) == null) {
             throw new IllegalStateException(
